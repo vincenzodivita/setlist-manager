@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="Setlist Manager con Metronomo - Gestisci le tue setlist musicali">
+    <title>Setlist Manager</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAABjElEQVR4nO2Wu0oDQRSGv0QQxAcQFBQLC0GwsbCwsLGxsbKx8QH0AXwBH8DW1tZSEBQRC0E7QRAUvIAXRDQxJhqNl/hllpzAEHZ3Z3eTFPnhwLKz5/xnZubMGfhPKAA6gWGgH2gBqoBi9L0UaAS6gB5gCJgEZoEZ4Ah4BOJRPAL7wBKwDqwCO8ApsA8cABtALdDyG/AuMGMQ+IwuYNkQ6CywDDwCL0AAeE2/vKX7n4E9YAW4BC6AXeDAIPAUWDcEugwMR8dnwAWwDdwF7+k+qvs/AV5jODGT0ZH7CXQ8YDiJeUBn7iVQBnQA08Aj8KYV/SrwDswB20ATUPkb+EqgDqgG6oEaoBKoAMqBUqAEKNL3YqAhej8g0GKgFagDqoByoAwoAYqAAqDAIN/PVKseqDUIfM0U3GiQvzUXwI1Bft4UPAV8KgMGgXHD+/HsFqgAhv4A3g+UGQSWDXN5xgQwlQn47t9Q/FtqjSl0DGz8AnrSBH0FFP8HHOmwr6b5t/8b+AZxmZBGgwOm3QAAAABJRU5ErkJggg==">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <h1>🎵 Setlist Manager</h1>
+            <button id="installBtn" class="install-btn" style="display: none;">Installa App</button>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-view="songs">Brani</button>
+            <button class="nav-tab" data-view="setlists">Setlist</button>
+            <button class="nav-tab" data-view="metronome">Metronomo</button>
+            <button class="nav-tab" data-view="live">Live</button>
+        </nav>
+
+        <!-- Songs View -->
+        <div id="songsView" class="view active">
+            <div class="view-header">
+                <h2>I Miei Brani</h2>
+                <button id="addSongBtn" class="btn btn-primary">+ Aggiungi Brano</button>
+            </div>
+            <div id="songsList" class="songs-list"></div>
+        </div>
+
+        <!-- Setlists View -->
+        <div id="setlistsView" class="view">
+            <div class="view-header">
+                <h2>Le Mie Setlist</h2>
+                <button id="addSetlistBtn" class="btn btn-primary">+ Nuova Setlist</button>
+            </div>
+            <div id="setlistsList" class="setlists-list"></div>
+        </div>
+
+        <!-- Metronome View -->
+        <div id="metronomeView" class="view">
+            <div class="metronome-container">
+                <h2>Metronomo</h2>
+                
+                <div class="metronome-display">
+                    <div id="metronomeBeatsContainer" class="metronome-beats-container"></div>
+                </div>
+
+                <div class="metronome-controls">
+                    <div class="control-group">
+                        <label>BPM</label>
+                        <div class="bpm-control">
+                            <button id="bpmDown" class="btn-icon">−</button>
+                            <input type="number" id="bpmInput" value="120" min="30" max="300">
+                            <button id="bpmUp" class="btn-icon">+</button>
+                        </div>
+                        <input type="range" id="bpmSlider" min="30" max="300" value="120">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Tempo</label>
+                        <select id="timeSignature">
+                            <option value="2">2/4</option>
+                            <option value="3">3/4</option>
+                            <option value="4" selected>4/4</option>
+                            <option value="5">5/4</option>
+                            <option value="6">6/8</option>
+                            <option value="7">7/8</option>
+                        </select>
+                    </div>
+
+                    <button id="metronomeToggle" class="btn btn-large btn-primary">▶ Start</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live View -->
+        <div id="liveView" class="view">
+            <div class="live-container">
+                <div class="live-sidebar">
+                    <h3>Setlist</h3>
+                    <div id="liveSetlistInfo" class="live-setlist-info">
+                        <p class="empty-state-text">Nessuna setlist caricata</p>
+                    </div>
+                    <div id="liveTrackList" class="live-track-list"></div>
+                </div>
+                
+                <div class="live-main">
+                    <div class="live-header">
+                        <h2 id="liveCurrentSongName">Seleziona una setlist</h2>
+                        <div class="live-song-info" id="liveSongInfo"></div>
+                    </div>
+
+                    <div class="metronome-display">
+                        <div id="liveMetronomeBeatsContainer" class="metronome-beats-container"></div>
+                    </div>
+
+                    <div class="live-controls">
+                        <div class="transport-controls">
+                            <button id="livePrevBtn" class="btn btn-secondary" title="Brano precedente">⏮</button>
+                            <button id="liveStopBtn" class="btn btn-secondary" title="Stop">⏹</button>
+                            <button id="livePlayBtn" class="btn btn-large btn-primary">▶ Play</button>
+                            <button id="liveNextBtn" class="btn btn-secondary" title="Brano successivo">⏭</button>
+                        </div>
+
+                        <div class="live-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="precountToggle">
+                                <span>Precount (2 battute)</span>
+                            </label>
+                        </div>
+                        
+                        <div class="progress-container">
+                            <div class="progress-info">
+                                <span id="currentBarDisplay">Battuta: 0</span>
+                                <span id="totalBarsDisplay">/ 0</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div id="progressBar" class="progress-bar"></div>
+                                <input type="range" id="progressSlider" class="progress-slider" min="0" max="100" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="liveSections" class="live-sections"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding/Editing Song -->
+    <div id="songModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="songModalTitle">Aggiungi Brano</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="songForm">
+                    <div class="form-group">
+                        <label>Nome Brano *</label>
+                        <input type="text" id="songName" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>BPM *</label>
+                            <input type="number" id="songBpm" min="30" max="300" value="120" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tempo *</label>
+                            <select id="songTimeSignature" required>
+                                <option value="2">2/4</option>
+                                <option value="3">3/4</option>
+                                <option value="4" selected>4/4</option>
+                                <option value="5">5/4</option>
+                                <option value="6">6/8</option>
+                                <option value="7">7/8</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="advancedMode">
+                            <span>Modalità Avanzata (Sezioni)</span>
+                        </label>
+                    </div>
+
+                    <div id="sectionsContainer" style="display: none;">
+                        <label>Sezioni del Brano</label>
+                        <div id="sectionsList"></div>
+                        <button type="button" id="addSectionBtn" class="btn btn-secondary">+ Aggiungi Sezione</button>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary cancel-btn">Annulla</button>
+                        <button type="submit" class="btn btn-primary">Salva</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Creating/Editing Setlist -->
+    <div id="setlistModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="setlistModalTitle">Nuova Setlist</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="setlistForm">
+                    <div class="form-group">
+                        <label>Nome Setlist *</label>
+                        <input type="text" id="setlistName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descrizione</label>
+                        <textarea id="setlistDescription" rows="2"></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary cancel-btn">Annulla</button>
+                        <button type="submit" class="btn btn-primary">Crea</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Setlist Details -->
+    <div id="setlistDetailModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="setlistDetailTitle"></h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="setlist-detail-header">
+                    <button id="addSongToSetlistBtn" class="btn btn-primary">+ Aggiungi Brano</button>
+                    <button id="playSetlistBtn" class="btn btn-success">▶ Avvia Setlist</button>
+                </div>
+                <div id="setlistDetailSongs" class="setlist-songs-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Song to Setlist -->
+    <div id="addToSetlistModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Seleziona Brano</h2>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="availableSongsList" class="available-songs-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
