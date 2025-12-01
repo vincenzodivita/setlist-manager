@@ -4,7 +4,7 @@ const API_CONFIG = {
     // Per produzione, usa l'URL di Cloud Run
     baseURL: window.location.hostname === 'localhost' 
         ? 'http://localhost:8080' 
-        : 'https://your-cloud-run-url.run.app',
+        : 'https://nestjs-googlecloud-authmicroservicees-850466837228.europe-west1.run.app',
     
     endpoints: {
         // Auth
