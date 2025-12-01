@@ -7,7 +7,7 @@
     <meta name="description" content="Setlist Manager con Metronomo - Gestisci le tue setlist musicali">
     <title>Setlist Manager</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAABjElEQVR4nO2Wu0oDQRSGv0QQxAcQFBQLC0GwsbCwsLGxsbKx8QH0AXwBH8DW1tZSEBQRC0E7QRAUvIAXRDQxJhqNl/hllpzAEHZ3Z3eTFPnhwLKz5/xnZubMGfhPKAA6gWGgH2gBqoBi9L0UaAS6gB5gCJgEZoEZ4Ah4BOJRPAL7wBKwDqwCO8ApsA8cABtALdDyG/AuMGMQ+IwuYNkQ6CywDDwCL0AAeE2/vKX7n4E9YAW4BC6AXeDAIPAUWDcEugwMR8dnwAWwDdwF7+k+qvs/AV5jODGT0ZH7CXQ8YDiJeUBn7iVQBnQA08Aj8KYV/SrwDswB20ATUPkb+EqgDqgG6oEaoBKoAMqBUqAEKNL3YqAhej8g0GKgFagDqoByoAwoAYqAAqDAIN/PVKseqDUIfM0U3GiQvzUXwI1Bft4UPAV8KgMGgXHD+/HsFqgAhv4A3g+UGQSWDXN5xgQwlQn47t9Q/FtqjSl0DGz8AnrSBH0FFP8HHOmwr6b5t/8b+AZxmZBGgwOm3QAAAABJRU5ErkJggg==">
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAABjElEQVR4nO2Wu0oDQRSGv0QQxAcQFBQLC0GwsbCwsLGxsbKx8QH0AXwBH8DW1tZSEBQRC0E7QRAUvIAXRDQxJhqNl/hllpzAEHZ3Z3eTFPnhwLKz5/xnZubMGfhPKAA6gWGgH2gBqoBi9L0UaAS6gB5gCJgEZoEZ4Ah4BOJRPAL7wBKwDqwCO8ApsA8cABtALdDyG/AuMGMQ+IwuYNkQ6CywDDwCL0AAeE2/vKX7n4E9YAW4BC6AXeDAIPAUWDcEugwMR8dnwAWwDdwF7+k+qvs/AV5jODGT0ZH7CXQ8YDiJeUBn7iVQBnQA08Aj8KYV/SrwDswB20ATUPkb+EqgDqgG6oEaoBKoAMqBUqAEKNL3YqAhej8g0GKgFagDqoByoAwoAQqAAqDAIN/PVKseqDUIfM0U3GiQvzUXwI1Bft4UPAV8KgMGgXHD+/HsFqgAhv4A3g+UGQSWDXN5xgQwlQn47t9Q/FtqjSl0DGz8AnrSBH0FFP8HHOmwr6b5t/8b+AZxmZBGgwOm3QAAAABJRU5ErkJggg==">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -15,7 +15,10 @@
         <!-- Header -->
         <header class="header">
             <h1>🎵 Setlist Manager</h1>
-            <button id="installBtn" class="install-btn" style="display: none;">Installa App</button>
+            <div style="display: flex; gap: 1rem;">
+                <button id="installBtn" class="install-btn" style="display: none;">Installa App</button>
+                <button id="logoutBtn" class="install-btn" onclick="handleLogout()">Logout</button>
+            </div>
         </header>
 
         <!-- Navigation -->
@@ -247,6 +250,7 @@
         </div>
     </div>
 
+    <script src="api.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
