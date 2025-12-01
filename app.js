@@ -26,9 +26,8 @@ let liveAudioContext = null;
 let deferredPrompt;
 
 // Initialize App
-document.addEventListener('DOMContentLoaded', () => {
-    loadData();
-    initializeApp();
+document.addEventListener('DOMContentLoaded', async () => {
+    await initializeApp();
     setupEventListeners();
     setupPWA();
 });
@@ -40,23 +39,29 @@ function initAudioContext() {
     }
 }
 
-// Load Data from LocalStorage
-function loadData() {
-    const savedSongs = localStorage.getItem('songs');
-    const savedSetlists = localStorage.getItem('setlists');
-    
-    if (savedSongs) songs = JSON.parse(savedSongs);
-    if (savedSetlists) setlists = JSON.parse(savedSetlists);
-}
-
-// Save Data to LocalStorage
-function saveData() {
-    localStorage.setItem('songs', JSON.stringify(songs));
-    localStorage.setItem('setlists', JSON.stringify(setlists));
+// Load Data from API
+async function loadData() {
+    try {
+        songs = await api.getSongs();
+        setlists = await api.getSetlists();
+    } catch (error) {
+        console.error('Error loading data:', error);
+        if (!api.isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+    }
 }
 
 // Initialize App
-function initializeApp() {
+async function initializeApp() {
+    // Check authentication
+    if (!api.isAuthenticated()) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Load data from API
+    await loadData();
     renderSongs();
     renderSetlists();
 }
@@ -239,7 +244,7 @@ function addSectionInput(name = '', bars = 4) {
 }
 
 // Handle Song Submit
-function handleSongSubmit(e) {
+async function handleSongSubmit(e) {
     e.preventDefault();
     
     const name = document.getElementById('songName').value;
@@ -259,24 +264,28 @@ function handleSongSubmit(e) {
             .filter(section => section !== null);
     }
     
-    const song = {
-        id: editingSongId || Date.now().toString(),
+    const songData = {
         name,
         bpm,
         timeSignature,
         sections
     };
     
-    if (editingSongId) {
-        const index = songs.findIndex(s => s.id === editingSongId);
-        songs[index] = song;
-    } else {
-        songs.push(song);
+    try {
+        if (editingSongId) {
+            const updatedSong = await api.updateSong(editingSongId, songData);
+            const index = songs.findIndex(s => s.id === editingSongId);
+            songs[index] = updatedSong;
+        } else {
+            const newSong = await api.createSong(songData);
+            songs.push(newSong);
+        }
+        
+        renderSongs();
+        closeModal('songModal');
+    } catch (error) {
+        alert('Errore nel salvare il brano: ' + error.message);
     }
-    
-    saveData();
-    renderSongs();
-    closeModal('songModal');
 }
 
 // Edit Song
@@ -285,18 +294,26 @@ function editSong(id) {
 }
 
 // Delete Song
-function deleteSong(id) {
-    if (confirm('Sei sicuro di voler eliminare questo brano?')) {
+async function deleteSong(id) {
+    if (!confirm('Sei sicuro di voler eliminare questo brano?')) return;
+    
+    try {
+        await api.deleteSong(id);
         songs = songs.filter(s => s.id !== id);
         
         // Remove from all setlists
-        setlists.forEach(setlist => {
-            setlist.songs = setlist.songs.filter(songId => songId !== id);
-        });
+        for (const setlist of setlists) {
+            if (setlist.songs.includes(id)) {
+                const updatedSongs = setlist.songs.filter(songId => songId !== id);
+                await api.updateSetlist(setlist.id, { songs: updatedSongs });
+                setlist.songs = updatedSongs;
+            }
+        }
         
-        saveData();
         renderSongs();
         renderSetlists();
+    } catch (error) {
+        alert('Errore nell\'eliminare il brano: ' + error.message);
     }
 }
 
@@ -355,29 +372,32 @@ function openSetlistModal(setlistId = null) {
 }
 
 // Handle Setlist Submit
-function handleSetlistSubmit(e) {
+async function handleSetlistSubmit(e) {
     e.preventDefault();
     
     const name = document.getElementById('setlistName').value;
     const description = document.getElementById('setlistDescription').value;
     
-    const setlist = {
-        id: editingSetlistId || Date.now().toString(),
+    const setlistData = {
         name,
-        description,
-        songs: editingSetlistId ? setlists.find(s => s.id === editingSetlistId).songs : []
+        description
     };
     
-    if (editingSetlistId) {
-        const index = setlists.findIndex(s => s.id === editingSetlistId);
-        setlists[index] = setlist;
-    } else {
-        setlists.push(setlist);
+    try {
+        if (editingSetlistId) {
+            const updatedSetlist = await api.updateSetlist(editingSetlistId, setlistData);
+            const index = setlists.findIndex(s => s.id === editingSetlistId);
+            setlists[index] = { ...setlists[index], ...updatedSetlist };
+        } else {
+            const newSetlist = await api.createSetlist(setlistData);
+            setlists.push(newSetlist);
+        }
+        
+        renderSetlists();
+        closeModal('setlistModal');
+    } catch (error) {
+        alert('Errore nel salvare la setlist: ' + error.message);
     }
-    
-    saveData();
-    renderSetlists();
-    closeModal('setlistModal');
 }
 
 // Edit Setlist
@@ -386,11 +406,15 @@ function editSetlist(id) {
 }
 
 // Delete Setlist
-function deleteSetlist(id) {
-    if (confirm('Sei sicuro di voler eliminare questa setlist?')) {
+async function deleteSetlist(id) {
+    if (!confirm('Sei sicuro di voler eliminare questa setlist?')) return;
+    
+    try {
+        await api.deleteSetlist(id);
         setlists = setlists.filter(s => s.id !== id);
-        saveData();
         renderSetlists();
+    } catch (error) {
+        alert('Errore nell\'eliminare la setlist: ' + error.message);
     }
 }
 
@@ -507,17 +531,21 @@ function getDragAfterElement(y) {
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-function updateSetlistOrder() {
+async function updateSetlistOrder() {
     const items = document.querySelectorAll('.setlist-song-item');
     const newOrder = Array.from(items).map(item => item.dataset.songId);
     
-    currentSetlist.songs = newOrder;
-    
-    const index = setlists.findIndex(s => s.id === currentSetlist.id);
-    setlists[index] = currentSetlist;
-    
-    saveData();
-    renderSetlistDetail();
+    try {
+        await api.reorderSetlist(currentSetlist.id, newOrder);
+        currentSetlist.songs = newOrder;
+        
+        const index = setlists.findIndex(s => s.id === currentSetlist.id);
+        setlists[index] = currentSetlist;
+        
+        renderSetlistDetail();
+    } catch (error) {
+        alert('Errore nel riordinare i brani: ' + error.message);
+    }
 }
 
 // Open Add to Setlist Modal
@@ -549,27 +577,37 @@ function openAddToSetlistModal() {
 }
 
 // Add Song to Setlist
-function addSongToSetlist(songId) {
-    currentSetlist.songs.push(songId);
-    
-    const index = setlists.findIndex(s => s.id === currentSetlist.id);
-    setlists[index] = currentSetlist;
-    
-    saveData();
-    renderSetlistDetail();
-    closeModal('addToSetlistModal');
+async function addSongToSetlist(songId) {
+    try {
+        await api.addSongToSetlist(currentSetlist.id, songId);
+        currentSetlist.songs.push(songId);
+        
+        const index = setlists.findIndex(s => s.id === currentSetlist.id);
+        setlists[index] = currentSetlist;
+        
+        renderSetlistDetail();
+        closeModal('addToSetlistModal');
+    } catch (error) {
+        alert('Errore nell\'aggiungere il brano: ' + error.message);
+    }
 }
 
 // Remove Song from Setlist
-function removeSongFromSetlist(index) {
-    if (confirm('Rimuovere questo brano dalla setlist?')) {
+async function removeSongFromSetlist(index) {
+    if (!confirm('Rimuovere questo brano dalla setlist?')) return;
+    
+    const songId = currentSetlist.songs[index];
+    
+    try {
+        await api.removeSongFromSetlist(currentSetlist.id, songId);
         currentSetlist.songs.splice(index, 1);
         
         const setlistIndex = setlists.findIndex(s => s.id === currentSetlist.id);
         setlists[setlistIndex] = currentSetlist;
         
-        saveData();
         renderSetlistDetail();
+    } catch (error) {
+        alert('Errore nel rimuovere il brano: ' + error.message);
     }
 }
 
@@ -1007,9 +1045,8 @@ function jumpToSection(sectionIndex) {
     for (let i = 0; i < sectionIndex; i++) {
         targetBar += song.sections[i].bars;
     }
-    // Add 1 because bars are 1-indexed (first bar of section B in your example is bar 5, but we want to show 4/8 completed)
     
-    liveCurrentBar = targetBar; // This will be 0 for section A, 4 for section B, etc.
+    liveCurrentBar = targetBar;
     liveCurrentSectionIndex = sectionIndex;
     liveCurrentBeat = 1;
     
@@ -1127,6 +1164,14 @@ function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('active');
 }
 
+// === LOGOUT ===
+
+function handleLogout() {
+    if (confirm('Sei sicuro di voler uscire?')) {
+        api.logout();
+    }
+}
+
 // === PWA ===
 
 function setupPWA() {
@@ -1164,3 +1209,4 @@ window.addSongToSetlist = addSongToSetlist;
 window.removeSongFromSetlist = removeSongFromSetlist;
 window.selectLiveSong = selectLiveSong;
 window.jumpToSection = jumpToSection;
+window.handleLogout = handleLogout;
