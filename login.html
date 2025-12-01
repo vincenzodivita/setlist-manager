@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Login - Setlist Manager</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAABjElEQVR4nO2Wu0oDQRSGv0QQxAcQFBQLC0GwsbCwsLGxsbKx8QH0AXwBH8DW1tZSEBQRC0E7QRAUvIAXRDQxJhqNl/hllpzAEHZ3Z3eTFPnhwLKz5/xnZubMGfhPKAA6gWGgH2gBqoBi9L0UaAS6gB5gCJgEZoEZ4Ah4BOJRPAL7wBKwDqwCO8ApsA8cABtALdDyG/AuMGMQ+IwuYNkQ6CywDDwCL0AAeE2/vKX7n4E9YAW4BC6AXeDAIPAUWDcEugwMR8dnwAWwDdwF7+k+qvs/AV5jODGT0ZH7CXQ8YDiJeUBn7iVQBnQA08Aj8KYV/SrwDswB20ATUPkb+EqgDqgG6oEaoBKoAMqBUqAEKNL3YqAhej8g0GKgFagDqoByoAwoAQqAAqDAIN/PVKseqDUIfM0U3GiQvzUXwI1Bft4UPAV8KgMGgXHD+/HsFqgAhv4A3g+UGQSWDXN5xgQwlQn47t9Q/FtqjSl0DGz8AnrSBH0FFP8HHOmwr6b5t/8b+AZxmZBGgwOm3QAAAABJRU5ErkJggg==">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --text-primary: #ffffff;
+            --text-secondary: #cbd5e1;
+            --border-color: #334155;
+            --danger-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .login-container {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 0.25rem;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: var(--danger-color);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .info-text {
+            text-align: center;
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🎵 Setlist Manager</h1>
+            <p>Gestisci le tue setlist musicali</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('login')">Login</button>
+            <button class="tab" onclick="switchTab('register')">Registrati</button>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="form-section active" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn" id="loginBtn">Accedi</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="registerForm" class="form-section" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>Nome</label>
+                <input type="text" id="registerName" required autocomplete="name">
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="registerEmail" required autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label>Password (min. 6 caratteri)</label>
+                <input type="password" id="registerPassword" required minlength="6" autocomplete="new-password">
+            </div>
+
+            <button type="submit" class="btn" id="registerBtn">Registrati</button>
+        </form>
+
+        <p class="info-text">I tuoi dati sono protetti e sincronizzati nel cloud</p>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        function switchTab(tab) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update forms
+            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+            document.getElementById(`${tab}Form`).classList.add('active');
+
+            // Clear error
+            hideError();
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').classList.remove('show');
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            hideError();
+
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+
+            btn.disabled = true;
+            btn.textContent = 'Accesso in corso...';
+
+            try {
+                await api.login(email, password);
+                window.location.href = 'index.html';
+            } catch (error) {
+                showError(error.message || 'Errore durante il login');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Accedi';
+            }
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+            hideError();
+
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const btn = document.getElementById('registerBtn');
+
+            btn.disabled = true;
+            btn.textContent = 'Registrazione in corso...';
+
+            try {
+                await api.register(email, password, name);
+                window.location.href = 'index.html';
+            } catch (error) {
+                showError(error.message || 'Errore durante la registrazione');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Registrati';
+            }
+        }
+
+        // Check if already logged in
+        if (api.isAuthenticated()) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
